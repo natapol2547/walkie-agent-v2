@@ -12,3 +12,7 @@ wheels/
 # Models
 *.pth
 *.pt
+*.bin
+*.safetensors
+*.gguf
+*.ot
