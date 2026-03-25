@@ -1,12 +1,15 @@
-"""Object Detection blueprint."""
+"""Object Detection blueprint — YOLO provider, loaded at startup."""
 
 from flask import Blueprint, request
 
-from api.utils import error, extract_provider_config, image_from_request_file, mask_to_b64, pil_to_b64, success
+from api.utils import error, image_from_request_file, mask_to_b64, pil_to_b64, success
 from services.object_detection import ObjectDetection
 from services.object_detection.base import DetectedObject
 
 bp = Blueprint("object_detection", __name__, url_prefix="/object-detection")
+
+_od = ObjectDetection(provider="yolo")
+_od.load_model()
 
 
 @bp.get("/providers")
@@ -24,15 +27,8 @@ def detect():
     except Exception as exc:
         return error(f"Invalid image: {exc}")
 
-    form = request.form.to_dict()
-    provider, config = extract_provider_config(form)
-
-    kwargs = {"provider": provider} if provider else {}
-    kwargs.update(config)
-
     try:
-        od = ObjectDetection(**kwargs)
-        detections = od.detect(image)
+        detections = _od.detect(image)
     except Exception as exc:
         return error(str(exc), 500)
 

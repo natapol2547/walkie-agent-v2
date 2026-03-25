@@ -1,12 +1,15 @@
-"""Pose Estimation blueprint."""
+"""Pose Estimation blueprint — YOLO-Pose provider, loaded at startup."""
 
 from flask import Blueprint, request
 
-from api.utils import error, extract_provider_config, image_from_request_file, pil_to_b64, success
+from api.utils import error, image_from_request_file, pil_to_b64, success
 from services.pose_estimation import PoseEstimation
 from services.pose_estimation.base import PersonPose, PoseKeypoint
 
 bp = Blueprint("pose_estimation", __name__, url_prefix="/pose-estimation")
+
+_pe = PoseEstimation(provider="yolo_pose")
+_pe.load_model()
 
 
 @bp.get("/providers")
@@ -24,15 +27,8 @@ def estimate():
     except Exception as exc:
         return error(f"Invalid image: {exc}")
 
-    form = request.form.to_dict()
-    provider, config = extract_provider_config(form)
-
-    kwargs = {"provider": provider} if provider else {}
-    kwargs.update(config)
-
     try:
-        pe = PoseEstimation(**kwargs)
-        poses = pe.estimate(image)
+        poses = _pe.estimate(image)
     except Exception as exc:
         return error(str(exc), 500)
 

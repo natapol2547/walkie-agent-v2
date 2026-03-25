@@ -19,13 +19,21 @@ def create_app() -> Flask:
     def index():
         return {
             "service": "walkie-agent-v2",
+            "models": {
+                "stt": "whisper",
+                "tts": "elevenlabs",
+                "object_detection": "yolo",
+                "pose_estimation": "yolo_pose",
+                "image_caption": "paligemma",
+                "image_embed": "clip",
+            },
             "endpoints": [
-                "/stt/providers", "/stt/transcribe",
-                "/tts/providers", "/tts/synthesize", "/tts/synthesize-stream",
-                "/object-detection/providers", "/object-detection/detect",
-                "/pose-estimation/providers", "/pose-estimation/estimate",
-                "/image-caption/providers", "/image-caption/caption", "/image-caption/caption-batch",
-                "/image-embed/providers", "/image-embed/embed-image", "/image-embed/embed-text", "/image-embed/similarity",
+                "/stt/transcribe",
+                "/tts/synthesize", "/tts/synthesize-stream",
+                "/object-detection/detect",
+                "/pose-estimation/estimate",
+                "/image-caption/caption", "/image-caption/caption-batch",
+                "/image-embed/embed-image", "/image-embed/embed-text", "/image-embed/similarity",
             ],
         }
 

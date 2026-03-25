@@ -1,11 +1,13 @@
-"""STT (Speech-to-Text) blueprint."""
+"""STT (Speech-to-Text) blueprint — Whisper provider, loaded at startup."""
 
 from flask import Blueprint, request
 
-from api.utils import error, extract_provider_config, success
+from api.utils import error, success
 from services.stt import STT
 
 bp = Blueprint("stt", __name__, url_prefix="/stt")
+
+_stt = STT(provider="whisper")
 
 
 @bp.get("/providers")
@@ -20,15 +22,8 @@ def transcribe():
 
     audio_bytes = request.files["audio"].read()
 
-    form = request.form.to_dict()
-    provider, config = extract_provider_config(form)
-
-    kwargs = {"provider": provider} if provider else {}
-    kwargs.update(config)
-
     try:
-        stt = STT(**kwargs)
-        transcription = stt.transcribe(audio_bytes)
+        transcription = _stt.transcribe(audio_bytes)
     except Exception as exc:
         return error(str(exc), 500)
 

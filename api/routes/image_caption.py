@@ -1,11 +1,14 @@
-"""Image Caption blueprint."""
+"""Image Caption blueprint — PaliGemma provider, loaded at startup."""
 
 from flask import Blueprint, request
 
-from api.utils import error, extract_provider_config, image_from_request_file, success
+from api.utils import error, image_from_request_file, success
 from services.image_caption import ImageCaption
 
 bp = Blueprint("image_caption", __name__, url_prefix="/image-caption")
+
+_ic = ImageCaption(provider="paligemma")
+_ic.load_model()
 
 
 @bp.get("/providers")
@@ -24,15 +27,9 @@ def caption():
         return error(f"Invalid image: {exc}")
 
     prompt = request.form.get("prompt")
-    form = {k: v for k, v in request.form.to_dict().items() if k not in ("prompt",)}
-    provider, config = extract_provider_config(form)
-
-    kwargs = {"provider": provider} if provider else {}
-    kwargs.update(config)
 
     try:
-        ic = ImageCaption(**kwargs)
-        result = ic.caption(image, prompt=prompt)
+        result = _ic.caption(image, prompt=prompt)
     except Exception as exc:
         return error(str(exc), 500)
 
@@ -53,15 +50,8 @@ def caption_batch():
     prompts_raw = request.form.getlist("prompts")
     prompts = prompts_raw if prompts_raw else None
 
-    form = {k: v for k, v in request.form.to_dict().items() if k not in ("prompts",)}
-    provider, config = extract_provider_config(form)
-
-    kwargs = {"provider": provider} if provider else {}
-    kwargs.update(config)
-
     try:
-        ic = ImageCaption(**kwargs)
-        results = ic.caption_batch(images, prompts=prompts)
+        results = _ic.caption_batch(images, prompts=prompts)
     except Exception as exc:
         return error(str(exc), 500)
 
